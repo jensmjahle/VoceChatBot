@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:doc.voce.chat)",
+      "WebFetch(domain:chat.gnomguttan.no)",
+      "Bash(python -m py_compile app/core/config.py app/main.py)"
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+vocechat:
+  server_url: "${VOCECHAT_SERVER_URL}"
+
+bots:
+  - name: "general"
+    api_key: "${GENERAL_BOT_API_KEY:-disabled}"
+    webhook_path: "/webhook/general"
+    type: "ai_chat"
+    config:
+      model: "${OLLAMA_MODEL:-llama3.2}"
+      system_prompt: "${GENERAL_BOT_SYSTEM_PROMPT:-You are a helpful and friendly assistant.}"
+      temperature: 0.7
+      max_tokens: 2048
+      history_length: 20
+
+  - name: "jellyfin"
+    api_key: "${JELLYFIN_BOT_API_KEY:-disabled}"
+    webhook_path: "/webhook/jellyfin"
+    type: "jellyfin_proxy"
+    config:
+      target_channel_id: "${JELLYFIN_CHANNEL_ID:-1}"
+
+  - name: "jellyseerr"
+    api_key: "${JELLYSEERR_BOT_API_KEY:-disabled}"
+    webhook_path: "/webhook/jellyseerr"
+    type: "jellyseerr_proxy"
+    config:
+      jellyseerr_url: "${JELLYSEERR_URL:-http://jellyseerr:5055}"
+      jellyseerr_api_key: "${JELLYSEERR_API_KEY:-disabled}"
+      target_channel_id: "${JELLYSEERR_CHANNEL_ID:-2}"
+
+ollama:
+  base_url: "http://ollama:11434"
+
+jellyfin:
+  url: "${JELLYFIN_URL:-http://jellyfin:8096}"
+  api_key: "${JELLYFIN_API_KEY:-disabled}"

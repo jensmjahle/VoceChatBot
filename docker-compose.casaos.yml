@@ -1,0 +1,71 @@
+name: vocechatbot
+
+services:
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: vocechatbot-ollama
+    volumes:
+      - /DATA/AppData/vocechatbot/ollama:/root/.ollama
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    # Uncomment for NVIDIA GPU:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: vocechatbot-ollama-init
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2}
+    entrypoint: ["/bin/sh", "-c", "ollama pull ${OLLAMA_MODEL:-llama3.2}"]
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: "no"
+
+  vocechatbot:
+    image: ghcr.io/jensmjahle/vocechatbot:latest
+    container_name: vocechatbot
+    ports:
+      - "8000:8000"
+    environment:
+      # --- VoceChat ---
+      - VOCECHAT_SERVER_URL=https://chat.gnomguttan.no
+
+      # --- AI chatbot (Ollama) ---
+      - GENERAL_BOT_API_KEY=fyll-inn-her
+      - OLLAMA_MODEL=llama3.2
+      - GENERAL_BOT_SYSTEM_PROMPT=You are a helpful and friendly assistant.
+
+      # --- Jellyfin notifikasjoner ---
+      - JELLYFIN_BOT_API_KEY=fyll-inn-her
+      - JELLYFIN_CHANNEL_ID=1
+      - JELLYFIN_URL=http://jellyfin:8096
+      - JELLYFIN_API_KEY=fyll-inn-her
+
+      # --- Jellyseerr ---
+      - JELLYSEERR_BOT_API_KEY=fyll-inn-her
+      - JELLYSEERR_CHANNEL_ID=2
+      - JELLYSEERR_URL=https://din-jellyseerr-url.no
+      - JELLYSEERR_API_KEY=fyll-inn-her
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
